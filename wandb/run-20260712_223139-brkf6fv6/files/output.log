@@ -1,0 +1,51 @@
+Datasets opened successfully
+  Train : 1959-01-01T00:00:00.000000000 → 2000-12-31T18:00:00.000000000
+  Val   : 2017-01-01T00:00:00.000000000   → 2018-12-31T18:00:00.000000000
+
+### Phase 1: Single-step training on 3 GPU(s) ###
+Assigned Channel Weights: 10m_u_component_of_wind - 0.1
+Assigned Channel Weights: 10m_v_component_of_wind - 0.1
+Assigned Channel Weights: 2m_temperature - 1.0
+Assigned Channel Weights: geopotential_250 - 0.25
+Assigned Channel Weights: geopotential_500 - 0.5
+Assigned Channel Weights: geopotential_850 - 0.85
+Assigned Channel Weights: specific_humidity_250 - 0.25
+Assigned Channel Weights: specific_humidity_500 - 0.5
+Assigned Channel Weights: specific_humidity_850 - 0.85
+Assigned Channel Weights: temperature_250 - 0.25
+Assigned Channel Weights: temperature_500 - 0.5
+Assigned Channel Weights: temperature_850 - 0.85
+Assigned Channel Weights: total_column_water_vapour - 0.1
+Assigned Channel Weights: u_component_of_wind_250 - 0.25
+Assigned Channel Weights: u_component_of_wind_500 - 0.5
+Assigned Channel Weights: u_component_of_wind_850 - 0.85
+Assigned Channel Weights: v_component_of_wind_250 - 0.25
+Assigned Channel Weights: v_component_of_wind_500 - 0.5
+Assigned Channel Weights: v_component_of_wind_850 - 0.85
+[Worker 140108914099968] started — 22 channels: ['10m_u_component_of_wind', '10m_v_component_of_wind', '2m_temperature', 'total_column_water_vapour', 'surface_pressure', 'u_component_of_wind_250', 'u_component_of_wind_500', 'u_component_of_wind_850', 'v_component_of_wind_250', 'v_component_of_wind_500', 'v_component_of_wind_850', 'temperature_250', 'temperature_500', 'temperature_850', 'geopotential_250', 'geopotential_500', 'geopotential_850', 'specific_humidity_250', 'specific_humidity_500', 'specific_humidity_850', 'land_sea_mask', 'soil_type'][Worker 140108905707264] started — 22 channels: ['10m_u_component_of_wind', '10m_v_component_of_wind', '2m_temperature', 'total_column_water_vapour', 'surface_pressure', 'u_component_of_wind_250', 'u_component_of_wind_500', 'u_component_of_wind_850', 'v_component_of_wind_250', 'v_component_of_wind_500', 'v_component_of_wind_850', 'temperature_250', 'temperature_500', 'temperature_850', 'geopotential_250', 'geopotential_500', 'geopotential_850', 'specific_humidity_250', 'specific_humidity_500', 'specific_humidity_850', 'land_sea_mask', 'soil_type']
+Phase 1:   0%|          | 0/100 [00:00<?, ?it/s]Traceback (most recent call last):
+  File "/home/vishnu/new_sfno_train/train.py", line 79, in <module>
+    main()
+  File "/home/vishnu/new_sfno_train/train.py", line 58, in main
+    phase1.run(ds_train, ds_val, model, cfg,
+  File "/home/vishnu/new_sfno_train/phase1.py", line 63, in run
+    mask = [not i in surf_vars for i in all_vars]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vishnu/new_sfno_train/phase1.py", line 63, in <listcomp>
+    mask = [not i in surf_vars for i in all_vars]
+                     ^^^^^^^^^
+NameError: name 'surf_vars' is not defined
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/vishnu/new_sfno_train/train.py", line 79, in <module>
+[rank0]:     main()
+[rank0]:   File "/home/vishnu/new_sfno_train/train.py", line 58, in main
+[rank0]:     phase1.run(ds_train, ds_val, model, cfg,
+[rank0]:   File "/home/vishnu/new_sfno_train/phase1.py", line 63, in run
+[rank0]:     mask = [not i in surf_vars for i in all_vars]
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/vishnu/new_sfno_train/phase1.py", line 63, in <listcomp>
+[rank0]:     mask = [not i in surf_vars for i in all_vars]
+[rank0]:                      ^^^^^^^^^
+[rank0]: NameError: name 'surf_vars' is not defined
+Worker Error: cannot schedule new futures after interpreter shutdown
+Worker Error: cannot schedule new futures after shutdown

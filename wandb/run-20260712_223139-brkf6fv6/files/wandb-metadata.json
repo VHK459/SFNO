@@ -1,0 +1,93 @@
+{
+  "os":  "Linux-5.4.0-172-generic-x86_64-with-glibc2.31",
+  "python":  "CPython 3.11.14",
+  "startedAt":  "2026-07-12T17:01:39.889974Z",
+  "args":  [
+    "--phase",
+    "1"
+  ],
+  "program":  "/home/vishnu/new_sfno_train/train.py",
+  "codePath":  "train.py",
+  "codePathLocal":  "train.py",
+  "email":  "vishnukadam459@gmail.com",
+  "root":  "/home/vishnu/new_sfno_train",
+  "host":  "gpu2",
+  "executable":  "/home/vishnu/.conda/envs/vishnu/bin/python3.11",
+  "cpu_count":  128,
+  "cpu_count_logical":  128,
+  "gpu":  "NVIDIA A100-SXM4-80GB",
+  "gpu_count":  3,
+  "disk":  {
+    "/":  {
+      "total":  "1819278561280",
+      "used":  "144319995904"
+    }
+  },
+  "memory":  {
+    "total":  "2151743655936"
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA A100-SXM4-80GB",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere",
+      "uuid":  "GPU-f402f344-6019-ae1d-0c6b-e686985df0da"
+    },
+    {
+      "name":  "NVIDIA A100-SXM4-80GB",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere",
+      "uuid":  "GPU-fe31083e-643d-81f6-63a2-a5f302fb20d6"
+    },
+    {
+      "name":  "NVIDIA A100-SXM4-80GB",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere",
+      "uuid":  "GPU-51c8850e-df7e-c5e6-1619-2582d822765c"
+    }
+  ],
+  "cudaVersion":  "12.2",
+  "slurm":  {
+    "cluster_name":  "(null)",
+    "conf":  "/etc/slurm/slurm.conf",
+    "cpus_on_node":  "32",
+    "cpus_per_task":  "32",
+    "gpus_on_node":  "3",
+    "gtids":  "0",
+    "job_account":  "iiser",
+    "job_cpus_per_node":  "32",
+    "job_end_time":  "1785258081",
+    "job_gid":  "1031",
+    "job_gpus":  "5,6,7",
+    "job_id":  "67430",
+    "job_name":  "sfno",
+    "job_nodelist":  "gpu2",
+    "job_num_nodes":  "1",
+    "job_partition":  "GPU-AI_prio",
+    "job_qos":  "normal",
+    "job_start_time":  "1783875681",
+    "job_uid":  "1029",
+    "job_user":  "vishnu",
+    "jobid":  "67430",
+    "localid":  "0",
+    "nnodes":  "1",
+    "nodeid":  "0",
+    "nodelist":  "gpu2",
+    "nprocs":  "1",
+    "ntasks":  "1",
+    "pmix_timeout":  "3000",
+    "prio_process":  "0",
+    "procid":  "0",
+    "submit_dir":  "/home/vishnu/new_sfno_train",
+    "submit_host":  "fortytwo",
+    "task_pid":  "519610",
+    "tasks_per_node":  "1",
+    "topology_addr":  "gpu2",
+    "topology_addr_pattern":  "node",
+    "tres_per_task":  "cpu:32"
+  },
+  "writerId":  "6sqwf41g95hksvvrxog9jku60i4gz4ro"
+}
