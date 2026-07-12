@@ -60,7 +60,7 @@ def run(
 
     static_vars = cfg.data_config['static_variables']
     all_vars = build_channel_names(cfg.data_config)
-    mask = [not i in surf_vars for i in all_vars]
+    mask = [not i in static_vars for i in all_vars]
     indices = [i for i,m in enumerate(mask) if m]
     
     if main:
