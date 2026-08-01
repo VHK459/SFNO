@@ -50,7 +50,7 @@ echo "GPU count   : $(python -c 'import torch; print(torch.cuda.device_count())'
 
 torchrun --nproc_per_node=3 --master_port=29501 \
     train.py \
-        --phase 1 \
+        --phase 3 \
 
 EXIT_CODE=$?
 

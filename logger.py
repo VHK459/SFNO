@@ -9,6 +9,7 @@ All functions are no-ops when called from non-main ranks
 from __future__ import annotations
 from typing import Any
 
+import numpy as np
 import wandb
 
 
@@ -72,6 +73,85 @@ def log_phase1_val(
         "phase1/val_spectral_loss": val_spectral_loss,
         "phase1_step":              step,
     })
+
+
+def log_final_metrics(results: dict, is_main: bool, phase: str = "phase1") -> None:
+    """
+    Log end-of-phase RMSE/ACC metrics (as returned by metrics.evaluate) to
+    W&B as proper line charts against rollout step, using
+    wandb.plot.line_series. Produces four charts under a
+    `{phase}_metrics/...` prefix:
+
+      - rmse_mean_vs_rollout       : one line, mean-over-variables RMSE vs
+                                      rollout step (1..T)
+      - acc_mean_vs_rollout        : one line, mean-over-variables ACC vs
+                                      rollout step
+      - rmse_per_variable_vs_rollout : one line per variable, RMSE vs
+                                         rollout step
+      - acc_per_variable_vs_rollout  : one line per variable, ACC vs
+                                         rollout step
+
+    (Logging 28 separate flat scalars, one per lead time, gives W&B no way
+    to draw a lead-time axis -- line_series builds the actual x/y chart in
+    one shot instead.)
+    """
+    if not is_main:
+        return
+
+    prefix = f"{phase}_metrics"
+
+    rmse_mean_curve = np.asarray(results["rmse_mean_over_vars"], dtype=float)  # (T,)
+    acc_mean_curve = np.asarray(results["acc_mean_over_vars"], dtype=float)    # (T,)
+    rollout_steps = list(range(1, len(rmse_mean_curve) + 1))
+
+    var_names = list(results["rmse"].keys())
+    rmse_per_var = [np.asarray(results["rmse"][v], dtype=float).tolist() for v in var_names]
+    acc_per_var = [np.asarray(results["acc"][v], dtype=float).tolist() for v in var_names]
+
+    log_dict = {
+        # Single-number rollout+variable-averaged summaries, handy for
+        # sorting/filtering runs in the W&B table view.
+        f"{prefix}/rmse_overall": float(rmse_mean_curve.mean()),
+        f"{prefix}/acc_overall": float(acc_mean_curve.mean()),
+
+        # Mean-over-variables RMSE / ACC vs rollout step
+        f"{prefix}/rmse_mean_vs_rollout": wandb.plot.line_series(
+            xs=rollout_steps, ys=[rmse_mean_curve.tolist()], keys=["mean_rmse"],
+            title=f"{prefix}: mean RMSE vs rollout step", xname="rollout step",
+        ),
+        f"{prefix}/acc_mean_vs_rollout": wandb.plot.line_series(
+            xs=rollout_steps, ys=[acc_mean_curve.tolist()], keys=["mean_acc"],
+            title=f"{prefix}: mean ACC vs rollout step", xname="rollout step",
+        ),
+
+        # Per-variable RMSE / ACC vs rollout step (one line per variable,
+        # sharing the same x-axis)
+        f"{prefix}/rmse_per_variable_vs_rollout": wandb.plot.line_series(
+            xs=rollout_steps, ys=rmse_per_var, keys=var_names,
+            title=f"{prefix}: RMSE per variable vs rollout step", xname="rollout step",
+        ),
+        f"{prefix}/acc_per_variable_vs_rollout": wandb.plot.line_series(
+            xs=rollout_steps, ys=acc_per_var, keys=var_names,
+            title=f"{prefix}: ACC per variable vs rollout step", xname="rollout step",
+        ),
+    }
+
+    wandb.log(log_dict)
+
+
+def log_phase1_metrics(results: dict, is_main: bool) -> None:
+    """End-of-phase-1 RMSE/ACC metrics. Thin wrapper around log_final_metrics."""
+    log_final_metrics(results, is_main=is_main, phase="phase1")
+
+
+def log_phase3_metrics(results: dict, is_main: bool) -> None:
+    """End-of-phase-3 RMSE/ACC metrics. Thin wrapper around log_final_metrics."""
+    log_final_metrics(results, is_main=is_main, phase="phase3")
+
+
+def log_phase4_metrics(results: dict, is_main: bool) -> None:
+    """End-of-phase-4 RMSE/ACC metrics. Thin wrapper around log_final_metrics."""
+    log_final_metrics(results, is_main=is_main, phase="phase4")
 
 
 def log_phase3_train(

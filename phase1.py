@@ -5,6 +5,7 @@ Single-step prediction training (Phase 1).
 """
 
 from __future__ import annotations
+import os
 import torch
 import torch.optim as optim
 from torch.optim.lr_scheduler import LinearLR, CosineAnnealingWarmRestarts, SequentialLR
@@ -13,6 +14,7 @@ from tqdm import tqdm
 
 import logger
 import checkpointing
+import metrics
 from config import TrainConfig
 from config import build_channel_names
 from data import make_train_prefetcher, make_val_prefetcher
@@ -40,9 +42,9 @@ def run(
     optimizer = optim.Adam(model.parameters(), lr=cfg.phase1_lr)
 
     # Warmup → cosine-with-restarts
-    warmup    = LinearLR(optimizer, start_factor=0.001, end_factor=1.0,
-                         total_iters=cfg.phase1_gradient_steps)
-    cosine    = CosineAnnealingWarmRestarts(optimizer, T_0=1_000, T_mult=1, eta_min=5e-5)
+    warmup    = LinearLR(optimizer, start_factor=0.002, end_factor=1,
+                         total_iters=cfg.phase1_warmup_steps)
+    cosine    = CosineAnnealingWarmRestarts(optimizer, T_0=1000, T_mult=1, eta_min=5e-5)
     scheduler = SequentialLR(optimizer, schedulers=[warmup, cosine],
                              milestones=[cfg.phase1_warmup_steps])
 
@@ -62,6 +64,8 @@ def run(
     all_vars = build_channel_names(cfg.data_config)
     mask = [not i in static_vars for i in all_vars]
     indices = [i for i,m in enumerate(mask) if m]
+
+    best_val_loss = None
     
     # if is_main:
     #     print(f' The train variables are {all_vars}')
@@ -106,6 +110,12 @@ def run(
                 logger.log_phase1_val(step=step, val_loss=lv.item(),
                                       val_spectral_loss=sv.item(), is_main=is_main)
                 print(f"[P1 {step}] VAL loss={lv.item():.4f}  spectral={sv.item():.4f}")
+
+                # ── Best-model checkpoint ────────────────────────────────────
+                best_val_loss = checkpointing.save_best(
+                    model, cfg.phase1_best_ckpt_dir, is_main=is_main,
+                    metric=lv.item(), best_metric=best_val_loss,
+                )
             model.train()
 
         # ── Checkpoint ───────────────────────────────────────────────────────
@@ -120,3 +130,29 @@ def run(
     checkpointing.save(model, cfg.phase1_final_ckpt, is_main=is_main)
     if is_main:
         print("Phase 1 complete.")
+
+    # ── Full RMSE / ACC evaluation over the whole validation set ─────────────
+    # Run once, after Phase 1 finishes, on the main rank only. Uses the best
+    # checkpoint if one was saved during training, otherwise the final model.
+    if is_main and cfg.phase1_run_metrics:
+        print("\n### Phase 1: running RMSE/ACC evaluation ###")
+        eval_model = model.module if hasattr(model, "module") else model
+
+        if os.path.exists(cfg.phase1_best_ckpt_dir):
+            final_ckpt = os.path.join(cfg.phase1_best_ckpt_dir, "model.pth")
+            checkpointing.load(eval_model,final_ckpt, device=device, is_main=is_main)
+        else:
+            print("[metrics] No best checkpoint found; evaluating the final model.")
+
+        results = metrics.evaluate(
+            eval_model, ds_val, cfg, device,
+            rollout_len=cfg.phase1_metric_rollout_len,
+            n_samples=cfg.phase1_metric_samples,
+            clim_path=cfg.clim_path,
+            is_main=is_main,
+        )
+        logger.log_phase1_metrics(results, is_main=is_main)
+
+    #     # Restore training weights (final model) in case `model` is reused
+    #     # by a subsequent phase in the same process.
+        checkpointing.load(eval_model, cfg.phase1_final_ckpt, device=device, is_main=is_main)

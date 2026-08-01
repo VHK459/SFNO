@@ -128,7 +128,7 @@ class ERA5Prefetcher:
         self.time_max = self.ds.time.size - sequence_length
         self.valid_indices = self.time_max
 
-        self.queue = queue.Queue(maxsize=queue_size = 1) if metric == True else queue.Queue(maxsize=queue_size)
+        self.queue = queue.Queue(maxsize=1) if metric else queue.Queue(maxsize=queue_size)
         self.stop_event = threading.Event()
         self.thread = threading.Thread(target=self._worker, daemon=True)
 
@@ -277,12 +277,13 @@ class ERA5Prefetcher:
                 tensor = torch.from_numpy(numpy_batch).contiguous().float()
                 if torch.cuda.is_available():
                     tensor = tensor.pin_memory()
-                if self.metric == True:
-                    self.queue.put((tensor, batch_view.time.values))
+                if self.metric:
+                    # (B, seq_len) array of the actual timestamps sampled for this batch
+                    time_values = self.ds.time.values[time_idx]
+                    self.queue.put((tensor, time_values))
                 else:
                     self.queue.put(tensor)
 
             except Exception as e:
                 print(f"Worker Error: {e}")
                 self.stop_event.set()
-
